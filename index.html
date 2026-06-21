@@ -87,7 +87,7 @@
      Sobreviva, minere minério, e leve sua picareta até o fundo do mundo.</p>
   <div class="controls">
     <kbd>A</kbd> <kbd>D</kbd> ou <kbd>←</kbd> <kbd>→</kbd> mover &nbsp;·&nbsp; <kbd>W</kbd> / <kbd>Espaço</kbd> pular<br>
-    <b>Clique esquerdo</b> minerar &nbsp;·&nbsp; <b>Clique direito</b> colocar bloco<br>
+    <b>Clique esquerdo</b> minerar &nbsp;·&nbsp; <b>Clique direito</b> ou <kbd>E</kbd> colocar bloco<br>
     <kbd>1</kbd>–<kbd>8</kbd> ou <b>scroll</b> selecionar item &nbsp;·&nbsp; <kbd>P</kbd> pausar
   </div>
   <button id="startBtn">JOGAR</button>
@@ -421,8 +421,9 @@ function handleMining(dt){
   }
 }
 
+let placeCd = 0;
 function handlePlace(){
-  if (mouse.btn!==2) return;
+  if (placeCd > 0) return;
   const {x,y} = worldMouse();
   if (!inReach(x,y)) return;
   if (get(x,y)!==AIR) return;
@@ -433,6 +434,8 @@ function handlePlace(){
   if (BLOCKS[blockId].solid && rectsOverlap(tmp, player)) return;
   set(x,y,blockId);
   inventory[blockId]--;
+  placeCd = 140;
+  spark(x*TILE+TILE/2, y*TILE+TILE/2, BLOCKS[blockId].color, 2);
   computeLight();
   refreshHotbar();
 }
@@ -667,6 +670,9 @@ function loop(ts){
   updatePlayer(dt);
   updateMobs(dt);
   handleMining(dt);
+  if (placeCd > 0) placeCd -= dt;
+  // colocar bloco: segurar botão direito OU tecla E (alternativa p/ trackpad)
+  if ((mouse.down && mouse.btn===2) || keys["e"]) handlePlace();
   updateParticles(dt);
 
   // câmera segue o player (com clamp)
